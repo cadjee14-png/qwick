@@ -40,17 +40,12 @@ const COLUMNS: {
     badgeClass: 'bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20',
     emptyBorder: 'border-[#22C55E]/10',
   },
-  {
-    status: 'completed',
-    label: 'Remis',
-    accent: 'text-[#71717A]',
-    badgeClass: 'bg-[#71717A]/10 text-[#71717A] border border-[#71717A]/20',
-    emptyBorder: 'border-[#71717A]/10',
-  },
 ]
 
 export function KDSBoard({ initialOrders, shopId, soundEnabled }: KDSBoardProps) {
-  const [orders, setOrders] = useState<Order[]>(initialOrders)
+  const [orders, setOrders] = useState<Order[]>(
+    initialOrders.filter((o) => o.status !== 'completed' && o.status !== 'cancelled')
+  )
   const audioCtxRef = useRef<AudioContext | null>(null)
 
   useEffect(() => {
@@ -81,11 +76,16 @@ export function KDSBoard({ initialOrders, shopId, soundEnabled }: KDSBoardProps)
               }
             }
           } else if (payload.eventType === 'UPDATE') {
-            setOrders((prev) =>
-              prev.map((o) =>
-                o.id === payload.new.id ? { ...o, ...payload.new } : o
+            const updatedStatus = payload.new.status as OrderStatus
+            if (updatedStatus === 'completed' || updatedStatus === 'cancelled') {
+              setOrders((prev) => prev.filter((o) => o.id !== payload.new.id))
+            } else {
+              setOrders((prev) =>
+                prev.map((o) =>
+                  o.id === payload.new.id ? { ...o, ...payload.new } : o
+                )
               )
-            )
+            }
           } else if (payload.eventType === 'DELETE') {
             setOrders((prev) => prev.filter((o) => o.id !== payload.old.id))
           }
@@ -137,7 +137,7 @@ export function KDSBoard({ initialOrders, shopId, soundEnabled }: KDSBoardProps)
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 h-[calc(100vh-120px)]">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 h-[calc(100vh-120px)]">
       {COLUMNS.map((col) => {
         const colOrders = orders
           .filter((o) => o.status === col.status)

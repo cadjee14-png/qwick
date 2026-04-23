@@ -5,12 +5,16 @@ import { createClient } from '@/lib/supabase/client'
 import { Order, Shop } from '@/types'
 import { KDSBoard } from '@/components/dashboard/KDSBoard'
 import { SoundToggle } from '@/components/dashboard/SoundToggle'
+import { OrderHistory, useHistoryCount } from '@/components/dashboard/OrderHistory'
+
+type Tab = 'active' | 'history'
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [shop, setShop] = useState<Shop | null>(null)
   const [loading, setLoading] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(false)
+  const [activeTab, setActiveTab] = useState<Tab>('active')
   const audioCtxRef = useRef<AudioContext | null>(null)
 
   useEffect(() => {
@@ -37,7 +41,7 @@ export default function OrdersPage() {
         .from('orders')
         .select('*, order_items(*)')
         .eq('shop_id', shopData.id)
-        .neq('status', 'cancelled')
+        .in('status', ['pending', 'preparing', 'ready'])
         .order('created_at', { ascending: false })
         .limit(100)
 
@@ -91,14 +95,84 @@ export default function OrdersPage() {
         />
       </div>
 
-      {/* KDS Board */}
+      {/* Tabs */}
+      <TabBar activeTab={activeTab} onTabChange={setActiveTab} orders={orders} shopId={shop.id} />
+
+      {/* Tab content */}
       <div className="flex-1">
-        <KDSBoard
-          initialOrders={orders}
-          shopId={shop.id}
-          soundEnabled={soundEnabled}
-        />
+        {activeTab === 'active' ? (
+          <KDSBoard
+            initialOrders={orders}
+            shopId={shop.id}
+            soundEnabled={soundEnabled}
+          />
+        ) : (
+          <OrderHistory shopId={shop.id} />
+        )}
       </div>
     </div>
   )
 }
+
+function TabBar({
+  activeTab,
+  onTabChange,
+  orders,
+  shopId,
+}: {
+  activeTab: Tab
+  onTabChange: (tab: Tab) => void
+  orders: Order[]
+  shopId: string
+}) {
+  const historyCount = useHistoryCount(shopId)
+  const activeCount = orders.filter(
+    (o) => o.status === 'pending' || o.status === 'preparing' || o.status === 'ready'
+  ).length
+
+  return (
+    <div className="flex items-center gap-1 border-b border-[#2A2A2A]">
+      <TabButton
+        label="En cours"
+        count={activeCount}
+        isActive={activeTab === 'active'}
+        onClick={() => onTabChange('active')}
+      />
+      <TabButton
+        label="Historique"
+        count={historyCount}
+        isActive={activeTab === 'history'}
+        onClick={() => onTabChange('history')}
+      />
+    </div>
+  )
+}
+
+function TabButton({
+  label,
+  count,
+  isActive,
+  onClick,
+}: {
+  label: string
+  count: number
+  isActive: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition border-b-2 -mb-px ${
+        isActive
+          ? 'border-[#FF6B35] text-white'
+          : 'border-transparent text-[#71717A] hover:text-white'
+      }`}
+    >
+      {label}
+      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-[#FF6B35]/10 text-[#FF6B35]">
+        {count}
+      </span>
+    </button>
+  )
+}
+
