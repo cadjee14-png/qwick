@@ -52,7 +52,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!shop?.slug || !canvasRef.current) return
 
-    const clientUrl = `${window.location.origin}/${shop.slug}`
+    const clientUrl = `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/${shop.slug}`
 
     QRCode.toCanvas(canvasRef.current, clientUrl, {
       width: 180,
@@ -131,7 +131,7 @@ export default function SettingsPage() {
     )
   }
 
-  const clientUrl = typeof window !== 'undefined' ? `${window.location.origin}/${shop.slug}` : `/${shop.slug}`
+  const clientUrl = typeof window !== 'undefined' ? `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/${shop.slug}` : `/${shop.slug}`
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
