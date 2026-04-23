@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 interface OrderItemInput {
   productId: string
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       0
     )
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     // Insert the order
     const { data: order, error: orderError } = await supabase
