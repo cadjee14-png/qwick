@@ -133,7 +133,9 @@ export function QueueStatus({
 
   useEffect(() => {
     const supabase = createClient()
+    let currentStatus = initialStatus
 
+    // Realtime subscription
     const channel = supabase
       .channel(`order-${orderId}`)
       .on(
@@ -146,15 +148,33 @@ export function QueueStatus({
         },
         (payload) => {
           const newStatus = payload.new.status as OrderStatus
-          if (newStatus) setStatus(newStatus)
+          if (newStatus) {
+            currentStatus = newStatus
+            setStatus(newStatus)
+          }
         }
       )
       .subscribe()
 
+    // Polling toutes les 3 secondes en fallback
+    const poll = setInterval(async () => {
+      if (currentStatus === 'completed' || currentStatus === 'cancelled') return
+      const { data } = await supabase
+        .from('orders')
+        .select('status')
+        .eq('id', orderId)
+        .single()
+      if (data?.status && data.status !== currentStatus) {
+        currentStatus = data.status as OrderStatus
+        setStatus(data.status as OrderStatus)
+      }
+    }, 3000)
+
     return () => {
       supabase.removeChannel(channel)
+      clearInterval(poll)
     }
-  }, [orderId])
+  }, [orderId, initialStatus])
 
   const isReady = status === 'ready'
   const statuses: OrderStatus[] = ['pending', 'preparing', 'ready', 'completed']
