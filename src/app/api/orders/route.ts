@@ -39,8 +39,6 @@ export async function POST(request: Request) {
         total_amount: totalAmount,
         status: 'pending',
         payment_status: 'unpaid',
-        // order_number is auto-set by trigger
-        order_number: 0,
       })
       .select('id, order_number')
       .single()
