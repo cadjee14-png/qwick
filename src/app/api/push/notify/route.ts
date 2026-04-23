@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import webpush from 'web-push'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
