@@ -1,15 +1,8 @@
 export const runtime = 'nodejs'
 
-import webpush from 'web-push'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
 
 export async function POST(request: Request) {
   try {
@@ -45,10 +38,17 @@ export async function POST(request: Request) {
       url: `/queue?orderId=${orderId}`,
     })
 
-    // Envoie la notif à tous les abonnements de cette commande
+    // Import dynamique pour éviter les problèmes de bundling Turbopack
+    const webpush = await import('web-push')
+    webpush.default.setVapidDetails(
+      process.env.VAPID_EMAIL!,
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+      process.env.VAPID_PRIVATE_KEY!
+    )
+
     await Promise.allSettled(
       subscriptions.map((sub) =>
-        webpush.sendNotification(sub.subscription, payload)
+        webpush.default.sendNotification(sub.subscription, payload)
       )
     )
 
