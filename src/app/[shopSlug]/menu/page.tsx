@@ -33,7 +33,6 @@ export default async function MenuPage({
       .from('products')
       .select('*')
       .eq('shop_id', shop.id)
-      .eq('is_available', true)
       .order('position', { ascending: true }),
   ])
 
