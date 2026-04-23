@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { CategoryNav } from '@/components/client/CategoryNav'
 import { ProductCard } from '@/components/client/ProductCard'
 import { CartButton } from '@/components/client/CartButton'
@@ -10,7 +10,7 @@ export default async function MenuPage({
   params: Promise<{ shopSlug: string }>
 }) {
   const { shopSlug } = await params
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Get shop id from slug
   const { data: shop } = await supabase

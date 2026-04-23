@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ShopProvider } from '@/components/client/ShopContext'
 import { Shop } from '@/types'
 
@@ -11,7 +11,7 @@ export default async function ShopLayout({
   params: Promise<{ shopSlug: string }>
 }) {
   const { shopSlug } = await params
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: shop, error } = await supabase
     .from('shops')
