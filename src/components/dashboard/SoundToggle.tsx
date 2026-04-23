@@ -50,31 +50,37 @@ export function SoundToggle({ onAudioUnlocked, onToggle }: SoundToggleProps) {
   )
 }
 
+// Ding de restaurant — 3 notes claires type caisse enregistreuse
 export function playNotificationSound(audioCtxRef: React.MutableRefObject<AudioContext | null>) {
   try {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new AudioContext()
     }
     const ctx = audioCtxRef.current
-    if (ctx.state === 'suspended') {
-      ctx.resume()
-    }
+    if (ctx.state === 'suspended') ctx.resume()
 
-    const oscillator = ctx.createOscillator()
-    const gainNode = ctx.createGain()
+    // 3 notes : Do - Mi - Sol (accord majeur, son de "ding ding ding")
+    const notes = [1046.5, 1318.5, 1567.98] // C6, E6, G6
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      const compressor = ctx.createDynamicsCompressor()
 
-    oscillator.connect(gainNode)
-    gainNode.connect(ctx.destination)
+      osc.connect(gain)
+      gain.connect(compressor)
+      compressor.connect(ctx.destination)
 
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(880, ctx.currentTime)
-    oscillator.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.15)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, ctx.currentTime)
 
-    gainNode.gain.setValueAtTime(0.4, ctx.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+      const startTime = ctx.currentTime + i * 0.18
+      gain.gain.setValueAtTime(0, startTime)
+      gain.gain.linearRampToValueAtTime(0.5, startTime + 0.01)   // attaque rapide
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.6) // déclin naturel
 
-    oscillator.start(ctx.currentTime)
-    oscillator.stop(ctx.currentTime + 0.5)
+      osc.start(startTime)
+      osc.stop(startTime + 0.65)
+    })
   } catch (e) {
     console.warn('[SoundToggle] Audio error:', e)
   }
