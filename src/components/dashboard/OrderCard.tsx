@@ -71,16 +71,26 @@ export function OrderCard({ order, onStatusChange, onPaymentChange }: OrderCardP
 
       {/* Items */}
       {order.order_items && order.order_items.length > 0 && (
-        <ul className="space-y-1.5 border-t border-[#2A2A2A] pt-3">
+        <ul className="space-y-2 border-t border-[#2A2A2A] pt-3">
           {order.order_items.map((item) => (
-            <li key={item.id} className="flex items-center justify-between text-sm gap-2">
-              <span className="text-white/80">
-                <span className="text-white font-semibold">{item.quantity}×</span>{' '}
-                {item.product_name}
-              </span>
-              <span className="text-[#71717A] text-xs tabular-nums shrink-0">
-                {formatPrice(item.unit_price * item.quantity)}
-              </span>
+            <li key={item.id} className="flex flex-col gap-1">
+              <div className="flex items-center justify-between text-sm gap-2">
+                <span className="text-white/80">
+                  <span className="text-white font-semibold">{item.quantity}×</span>{' '}
+                  {item.product_name}
+                </span>
+                <span className="text-[#71717A] text-xs tabular-nums shrink-0">
+                  {formatPrice(item.unit_price * item.quantity)}
+                </span>
+              </div>
+              {item.item_notes && (
+                <div className="flex items-start gap-1.5 bg-[#F59E0B]/10 border border-[#F59E0B]/20 rounded-lg px-2.5 py-1.5">
+                  <svg className="w-3.5 h-3.5 text-[#F59E0B] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                  <span className="text-[#F59E0B] text-xs font-medium leading-snug">{item.item_notes}</span>
+                </div>
+              )}
             </li>
           ))}
         </ul>
