@@ -26,10 +26,12 @@ export function ProductCard({ product }: ProductCardProps) {
     setModalQty(1)
     setNotes('')
     setIsOpen(true)
+    window.dispatchEvent(new Event('qwick:modal:open'))
   }, [product.is_available])
 
   const closeModal = useCallback(() => {
     setIsOpen(false)
+    window.dispatchEvent(new Event('qwick:modal:close'))
   }, [])
 
   const handleAddFromModal = useCallback(() => {
